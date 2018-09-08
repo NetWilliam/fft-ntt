@@ -43,6 +43,7 @@ template <typename T> void butterfly_exchange(T *array, size_t len)
 
 template <typename T> void fft(T *y, int len, int sign)
 {
+    /*
     for (int h = 2; h <= len; h <<= 1)
     {
         complex_type wn(cos(sign * 2 * PI / h), sin(sign * 2 * PI / h));
@@ -59,11 +60,11 @@ template <typename T> void fft(T *y, int len, int sign)
             }
         }
     }
-    /*
+    //*/
     for (int stride = 2; stride <= len; stride <<= 1)
     {
         complex_type wn(cos(sign * 2 * PI / stride), sin(sign * 2 * PI / stride));
-        for (int step = 0; step < stride; step += stride)
+        for (int step = 0; step < len; step += stride)
         {
             complex_type w(1, 0);
             for (int k = step; k < step + stride / 2; k += 1)
@@ -76,7 +77,7 @@ template <typename T> void fft(T *y, int len, int sign)
             }
         }
     }
-    */
+    //*/
     if (sign == -1)
         for_each(y, y + len, [len](T &y_ele) { y_ele /= len; });
 }
