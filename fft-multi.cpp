@@ -8,7 +8,8 @@
 
 using namespace std;
 
-const long double PI = 3.141592653589793238L;
+// const long double PI = 3.141592653589793238L;
+const long double PI = acos(-1.0);
 
 using complex_type = complex<long double>;
 
@@ -42,7 +43,7 @@ template <typename T> void butterfly_exchange(T *array, size_t len)
 
 template <typename T> void fft(T *y, int len, int sign)
 {
-    for (int h = 2; h <= len; h <<= 2)
+    for (int h = 2; h <= len; h <<= 1)
     {
         complex_type wn(cos(sign * 2 * PI / h), sin(sign * 2 * PI / h));
         for (int j = 0; j < len; j += h)
@@ -58,6 +59,24 @@ template <typename T> void fft(T *y, int len, int sign)
             }
         }
     }
+    /*
+    for (int stride = 2; stride <= len; stride <<= 1)
+    {
+        complex_type wn(cos(sign * 2 * PI / stride), sin(sign * 2 * PI / stride));
+        for (int step = 0; step < stride; step += stride)
+        {
+            complex_type w(1, 0);
+            for (int k = step; k < step + stride / 2; k += 1)
+            {
+                auto u = y[k];
+                auto v = w * y[k + stride / 2];
+                y[k] = u + v;
+                y[k + stride / 2] = u - v;
+                w = w * wn;
+            }
+        }
+    }
+    */
     if (sign == -1)
         for_each(y, y + len, [len](T &y_ele) { y_ele /= len; });
 }
@@ -100,13 +119,11 @@ vector<int> fft_multi(vector<int> &f, vector<int> &g)
     for (int i = 0; i < y_f.size(); ++i)
     {
         y_f[i] *= y_g[i];
-        cout << "y_f[" << i << "]: " << y_f[i] << ", ";
     }
-    cout << endl;
+    print_c(y_f);
 
     cout << "dft transform, butterfly_exchanging ......" << endl;
     butterfly_exchange(y_f.data(), y_f.size());
-    // for_each(y_f.begin(), y_f.end(), [](complex_type &c) { cout << c << ", "; });
     cout << "dft transform, sampling ......" << endl;
     fft(y_f.data(), y_f.size(), -1);
 
@@ -114,8 +131,8 @@ vector<int> fft_multi(vector<int> &f, vector<int> &g)
     vector<int> ret(y_f.size());
     transform(y_f.begin(), y_f.end(), ret.begin(),
               [](complex_type &c) -> int { return static_cast<int>(c.real() + 0.5); });
-    for_each(y_f.begin(), y_f.end(), [](complex_type &c) { cout << c << ", "; });
-    cout << endl;
+
+    print_c(y_f);
     return ret;
 }
 
@@ -151,7 +168,7 @@ int main()
 
     // expect: h(x) = 30 + 53x + 85x^2 + 125x^3 + 72x^4 + 48x^5 + 24x^6
     vector<int> h = fft_multi(f, g);
-    vector<int> h_ground_true = {30, 53, 85, 125, 72, 48, 24};
+    vector<int> h_ground_true = {30, 53, 85, 125, 72, 48, 24, 0};
 
     if (h == h_ground_true)
     {
